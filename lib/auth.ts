@@ -71,3 +71,59 @@ export async function getUserById(id: number): Promise<User | null> {
     await connection.end();
   }
 }
+
+/**
+ * Update a user's profile (only selected fields).
+ * Password is hashed if included.
+ */
+export async function updateUser(id: number, updates: Partial<User>): Promise<User | null> {
+  const connection = await getDbConnection();
+
+  try {
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (updates.username) {
+      fields.push("username = ?");
+      values.push(updates.username);
+    }
+    if (updates.email) {
+      fields.push("email = ?");
+      values.push(updates.email);
+    }
+    if (updates.password) {
+      const hashed = await bcrypt.hash(updates.password, 10);
+      fields.push("password = ?");
+      values.push(hashed);
+    }
+    if (updates.first_name) {
+      fields.push("first_name = ?");
+      values.push(updates.first_name);
+    }
+    if (updates.last_name) {
+      fields.push("last_name = ?");
+      values.push(updates.last_name);
+    }
+    if (updates.role) {
+      fields.push("role = ?");
+      values.push(updates.role);
+    }
+
+    if (fields.length === 0) return null;
+
+    values.push(id);
+    await connection.execute(
+      `UPDATE users SET ${fields.join(", ")} WHERE id = ?`,
+      values
+    );
+
+    const [rows] = await connection.execute(
+      "SELECT * FROM users WHERE id = ?",
+      [id]
+    );
+    const users = rows as User[];
+    return users.length > 0 ? users[0] : null;
+  } finally {
+    await connection.end();
+  }
+}
