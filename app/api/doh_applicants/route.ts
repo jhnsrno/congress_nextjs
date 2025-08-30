@@ -13,26 +13,26 @@ const pool = createPool({
 
 // --- Helpers ---
 type RawRow = {
-  firstname?: any;
-  middlename?: any;
-  lastname?: any;
-  extension?: any;
-  birthday?: any;
-  age?: any;
-  sex?: any;
-  civil_status?: any;
-  barangay?: any;
-  city_municipality?: any;
-  province?: any;
-  district?: any;
-  type_of_id?: any;
-  id_number?: any;
-  contact_number?: any;
-  bank_account_no?: any;
-  type_of_beneficiary?: any;
-  occupation?: any;
-  monthly_income?: any;
-  dependent_name?: any;
+  date: any;
+  hospital: any;
+  patient_lastname: any;
+  patient_firstname: any;
+  patient_middlename: any;
+  patient_extension: any;
+  birthday: any;
+  age: any;
+  address: any;
+  city: any;
+  province: any;
+  diagnosis: any;
+  assistance_type: any;
+  recommended_amount: any;
+  applicant_lastname: any;
+  applicant_firstname: any;
+  applicant_middlename: any;
+  applicant_extension: any;
+  relationship: any;
+  contact_number: any;
 };
 
 const toDateOrNull = (v: any): string | null => {
@@ -49,32 +49,32 @@ const toInt = (v: any): number => {
 const toStr = (v: any): string => (v == null ? "" : String(v).trim());
 
 const mapToValues = (row: RawRow): any[] => [
-  toStr(row.firstname),
-  toStr(row.middlename),
-  toStr(row.lastname),
-  toStr(row.extension),
+  toDateOrNull(row.date),
+  toStr(row.hospital),
+  toStr(row.patient_lastname),
+  toStr(row.patient_firstname),
+  toStr(row.patient_middlename),
+  toStr(row.patient_extension),
   toDateOrNull(row.birthday),
   toInt(row.age),
-  toStr(row.sex),
-  toStr(row.civil_status),
-  toStr(row.barangay),
-  toStr(row.city_municipality),
+  toStr(row.address),
+  toStr(row.city),
   toStr(row.province),
-  toStr(row.district),
-  toStr(row.type_of_id),
-  toStr(row.id_number),
+  toStr(row.diagnosis),
+  toStr(row.assistance_type),
+  toStr(row.recommended_amount),
+  toStr(row.applicant_lastname),
+  toStr(row.applicant_firstname),
+  toStr(row.applicant_middlename),
+  toStr(row.applicant_extension),
+  toStr(row.relationship),
   toStr(row.contact_number),
-  toStr(row.bank_account_no),
-  toStr(row.type_of_beneficiary),
-  toStr(row.occupation),
-  toStr(row.monthly_income),
-  toStr(row.dependent_name),
 ];
 
 // --- GET: fetch all applicants ---
 export async function GET() {
   try {
-    const [rows] = await pool.query("SELECT * FROM tupad_applicants ORDER BY id DESC");
+    const [rows] = await pool.query("SELECT * FROM doh_applicants ORDER BY id DESC");
     return NextResponse.json(rows);
   } catch (error) {
     console.error("GET Error:", error);
@@ -116,10 +116,11 @@ export async function POST(req: NextRequest) {
       // Map values
       const values = nonEmpty.map(mapToValues);
 
-      const sql = `INSERT INTO tupad_applicants (
-        firstname, middlename, lastname, extension, birthday, age, sex, civil_status, barangay,
-        city_municipality, province, district, type_of_id, id_number, contact_number, bank_account_no,
-        type_of_beneficiary, occupation, monthly_income, dependent_name
+      const sql = `INSERT INTO doh_applicants (
+        date, hospital, patient_lastname, patient_firstname, patient_middlename, patient_extension,
+        birthday, age, address, city, province, diagnosis, assistance_type, recommended_amount,
+        applicant_lastname, applicant_firstname, applicant_middlename, applicant_extension,
+        relationship, contact_number
       ) VALUES ?`;
 
       const conn = await pool.getConnection();
@@ -140,10 +141,11 @@ export async function POST(req: NextRequest) {
 
     // --- Manual single insert ---
     const data = await req.json();
-    const sql = `INSERT INTO tupad_applicants (
-      firstname, middlename, lastname, extension, birthday, age, sex, civil_status, barangay,
-      city_municipality, province, district, type_of_id, id_number, contact_number, bank_account_no,
-      type_of_beneficiary, occupation, monthly_income, dependent_name
+    const sql = `INSERT INTO doh_applicants (
+      date, hospital, patient_lastname, patient_firstname, patient_middlename, patient_extension,
+      birthday, age, address, city, province, diagnosis, assistance_type, recommended_amount,
+      applicant_lastname, applicant_firstname, applicant_middlename, applicant_extension,
+      relationship, contact_number
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const [result] = await pool.execute(sql, mapToValues(data));

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, ChevronDown } from 'lucide-react';
+import { LogOut, User, ChevronDown } from 'lucide-react';
+
+// ✅ Map routes to page titles
+const routeTitles: Record<string, string> = {
+  "/dashboard": "Congress Dashboard",
+  "/dashboard/search": "Search Applicants",
+  "/dashboard/users": "Users Management",
+  "/dashboard/dswd": "DSWD Programs",
+  "/dashboard/dswd/encoded": "Encoded DSWD",
+  "/dashboard/dswd/approved": "Approved DSWD",
+  "/dashboard/dswd/pullout": "Pullout DSWD",
+  "/dashboard/dswd/claimed": "Claimed DSWD",
+  "/dashboard/dswd/unclaimed": "Unclaimed DSWD",
+  "/dashboard/tupad": "TUPAD Program",
+  "/dashboard/doh": "DOH Services",
+  "/dashboard/profile": "Profile",
+  "/dashboard/settings": "Settings",
+};
 
 export default function Topbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const pageTitle = routeTitles[pathname] || "Congress Dashboard";
 
   const handleLogout = async () => {
     await logout();
@@ -28,17 +48,13 @@ export default function Topbar() {
     router.push('/dashboard/profile');
   };
 
-  const handleSettings = () => {
-    router.push('/dashboard/settings');
-  };
-
   return (
-    <header className="bg-gradient-to-r from-red-600 to-red-700 border-b border-red-800 shadow-lg">
+    <header className="bg-gradient-to-r from-red-600 to-red-700 border-b border-red-800 shadow-lg sticky top-0 z-50">
       <div className="px-6 py-4 flex justify-between items-center">
-        {/* Left side - Title */}
+        {/* Left side - Dynamic Title */}
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-bold text-white tracking-wide">
-            Congress Dashboard
+            {pageTitle}
           </h1>
           <div className="hidden md:block">
             <Badge 
@@ -117,14 +133,6 @@ export default function Topbar() {
               >
                 <User className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Profile</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem 
-                onClick={handleSettings}
-                className="cursor-pointer hover:bg-gray-50"
-              >
-                <Settings className="mr-2 h-4 w-4 text-gray-500" />
-                <span>Settings</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
